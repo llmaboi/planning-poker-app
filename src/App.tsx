@@ -1,19 +1,16 @@
-import { useState } from 'react';
-import reactLogo from './assets/react.svg';
-import './App.css';
 import { useAuthUser } from '@react-query-firebase/auth';
-import { connectFirebase } from './db';
-import { signInAnonymously, signOut } from 'firebase/auth';
-import { collection, doc, writeBatch } from 'firebase/firestore';
 import {
   useFirestoreCollectionMutation,
-  useFirestoreDocumentDeletion,
   useFirestoreQuery,
-  useFirestoreQueryData,
   useFirestoreWriteBatch,
 } from '@react-query-firebase/firestore';
-import Card from './Card';
+import { signInAnonymously } from 'firebase/auth';
+import { collection, doc, writeBatch } from 'firebase/firestore';
+import { useState } from 'react';
 import { PieChart } from 'react-minimal-pie-chart';
+import './App.css';
+import Card from './Card';
+import { connectFirebase } from './db';
 
 const cards = [1, 2, 3, 5, 8, 13, 21, 34, 55];
 const cardColors = [
@@ -104,7 +101,7 @@ function App() {
   });
 
   return (
-    <div className='App'>
+    <div className="App">
       {user.data ? (
         <div>Welcome {user.data.uid}!</div>
       ) : (
@@ -123,9 +120,7 @@ function App() {
           return (
             <Card
               key={number}
-              buttonDisabled={
-                mutationBatch.isLoading || typeof selectedNumber === 'number'
-              }
+              buttonDisabled={mutationBatch.isLoading || typeof selectedNumber === 'number'}
               number={number}
               onCardClick={addCard}
               selectedNumber={selectedNumber}
@@ -155,9 +150,7 @@ function App() {
                 <PieChart
                   data={pieData}
                   label={({ dataEntry }) =>
-                    `${dataEntry.title} | ${
-                      Math.round(dataEntry.percentage) + '%'
-                    }`
+                    `${dataEntry.title} | ${Math.round(dataEntry.percentage) + '%'}`
                   }
                   labelStyle={(index) => ({
                     fill: cardColors[index],
