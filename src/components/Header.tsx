@@ -53,7 +53,9 @@ function Header() {
   const { state } = useLocation();
 
   if (!roomName || !state || (state && !state.displayName)) {
-    return navigate('/noAuth');
+    navigate('/noAuth');
+    // TODO: Correct this...
+    return <div>Routing to No Auth...</div>;
   }
 
   const { auth } = connectFirebase();
