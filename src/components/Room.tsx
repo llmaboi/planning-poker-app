@@ -81,6 +81,8 @@ function HasRoomAndDisplay({ roomName, displayName }: { roomName: string; displa
         })}
       </div>
 
+      {/* TODO: Add users of users voted... */}
+
       {roomQuery.isLoading ? (
         //
         <div>Loading pie data...</div>
