@@ -1,5 +1,5 @@
 import { PieChart } from 'react-minimal-pie-chart';
-import { useGetRoom } from '../hooks/rooms.hooks';
+import { useSubscribeRoom } from '../hooks/rooms.hooks';
 
 const cardColors = [
   '#8D5A97',
@@ -14,11 +14,11 @@ const cardColors = [
 ];
 
 function PieData({ roomName }: { roomName: string }) {
-  const roomQuery = useGetRoom({ roomName, subscribe: true });
+  const roomQuery = useSubscribeRoom({ roomName });
 
   const roomData = roomQuery?.data?.data();
-
   const numberMap = new Map<number, number>();
+
   /**
    * 1. Get all cards to populate pie chard
    *  -- 1. Associate cards with the user && value

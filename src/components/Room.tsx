@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { useGetRoom, useUpdateRoom } from '../hooks/rooms.hooks';
+import { useSubscribeRoom, useUpdateRoom } from '../hooks/rooms.hooks';
 import Card from './Card';
 import PieData from './PieData';
 
@@ -26,7 +26,7 @@ function NoRoomOrDisplay() {
 
 function HasRoomAndDisplay({ roomName, displayName }: { roomName: string; displayName: string }) {
   const [selectedNumber, setSelectedNumber] = useState<number>();
-  const roomQuery = useGetRoom({ roomName });
+  const roomQuery = useSubscribeRoom({ roomName });
   const roomMutation = useUpdateRoom({ roomName });
 
   const roomData = roomQuery?.data?.data();

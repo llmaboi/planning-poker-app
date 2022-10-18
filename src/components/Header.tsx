@@ -3,7 +3,7 @@ import { useFirestoreWriteBatch } from '@react-query-firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { connectFirebase } from '../config/db';
-import { DisplayNames, useGetRoom, useUpdateRoom } from '../hooks/rooms.hooks';
+import { DisplayNames, useSubscribeRoom, useUpdateRoom } from '../hooks/rooms.hooks';
 
 function HostHeader({
   roomData,
@@ -59,17 +59,21 @@ function Header() {
   }
 
   const { auth } = connectFirebase();
-  const roomQuery = useGetRoom({ roomName, subscribe: true });
-  const roomData = roomQuery?.data?.data();
+  const roomQuery = useSubscribeRoom({ roomName });
 
   // TODO: Move this to a common header...
   function signOut() {
     if (auth.currentUser) {
       auth.signOut();
+      navigate('/noAuth');
+      // TODO: Correct this...
+      return <div>Routing to No Auth...</div>;
     }
   }
 
   const [isHost, setIsHost] = useState(false);
+
+  const roomData = roomQuery?.data?.data();
 
   useEffect(() => {
     if (roomData) {
