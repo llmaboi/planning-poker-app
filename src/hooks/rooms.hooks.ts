@@ -1,8 +1,7 @@
+import { connectFirebase } from '@/config/db';
 import { doc, setDoc } from '@firebase/firestore';
-import { useFirestoreDocument } from '@react-query-firebase/firestore';
-import { DocumentReference, getDoc } from 'firebase/firestore';
+import { collection, DocumentReference, getDoc } from 'firebase/firestore';
 import { useMutation, useQuery } from 'react-query';
-import { connectFirebase } from '../config/db';
 
 /**
  * FB Collection
@@ -54,15 +53,6 @@ function useGetRoom({ roomName }: GetRoomProps) {
   });
 }
 
-/**
- * Use the firestore react query package to subscribe to a snapshot.
- */
-function useSubscribeRoom({ roomName }: GetRoomProps) {
-  return useFirestoreDocument<DisplayNames>(['rooms', roomName], getRoom({ roomName }), {
-    subscribe: true,
-  });
-}
-
 type UpdateRoomProps = RoomNameProps;
 /**
  * Mutation hook to update a room
@@ -110,25 +100,27 @@ function useMutateRoomAndDisplayName() {
   });
 }
 
-// function useGetDisplayNameByRoom() {
-//   const { firestore } = connectFirebase();
+function useGetDisplayNameByRoom({
+  displayName,
+  roomName,
+}: {
+  displayName: string;
+  roomName: string;
+}) {
+  const { firestore } = connectFirebase();
 
-//   return useQuery(
-//     ['displayName'],
-//     //
-//     ({ queryKey }) => {
-//       const colRef = collection(firestore, 'rooms', roomName);
-//       const ref = doc(
-//         colRef,
-//         'rooms',
-//         displayName
-//         //
-//       );
+  return useQuery(['displayName', displayName], () => {
+    const colRef = collection(firestore, 'rooms');
+    const ref = doc(
+      colRef,
+      roomName
+      // displayName
+      //
+    );
 
-//       return getDoc(ref);
-//     }
-//   );
-// }
+    return getDoc(ref);
+  });
+}
 
-export { useMutateRoomAndDisplayName, useGetRoom, useSubscribeRoom, useUpdateRoom };
+export { useGetDisplayNameByRoom, useMutateRoomAndDisplayName, useGetRoom, useUpdateRoom };
 export type { DisplayNames };

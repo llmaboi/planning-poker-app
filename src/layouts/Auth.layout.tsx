@@ -1,9 +1,10 @@
+import Header from '@/components/Header';
+import { RoomDataProvider } from '@/providers/RoomData.provider';
 import { Outlet } from 'react-router-dom';
-import Header from '../components/Header';
 
 function AuthLayout() {
   return (
-    <>
+    <RoomDataProvider>
       <div
         style={{
           display: 'block',
@@ -16,7 +17,7 @@ function AuthLayout() {
       <div>
         <Outlet />
       </div>
-    </>
+    </RoomDataProvider>
   );
 }
 

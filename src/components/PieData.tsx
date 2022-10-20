@@ -1,5 +1,5 @@
 import { PieChart } from 'react-minimal-pie-chart';
-import { useSubscribeRoom } from '../hooks/rooms.hooks';
+import { DisplayNames } from '@/hooks/rooms.hooks';
 
 const cardColors = [
   '#8D5A97',
@@ -13,10 +13,10 @@ const cardColors = [
   '#BBDFC5',
 ];
 
-function PieData({ roomName }: { roomName: string }) {
-  const roomQuery = useSubscribeRoom({ roomName });
+function PieData({ roomData }: { roomData: DisplayNames | undefined }) {
+  // const roomQuery = useSubscribeRoom({ roomName });
 
-  const roomData = roomQuery?.data?.data();
+  // const roomData = roomQuery?.data?.data();
   const numberMap = new Map<number, number>();
 
   /**
@@ -49,10 +49,6 @@ function PieData({ roomName }: { roomName: string }) {
       color: cardColors[index],
     };
   });
-
-  if (roomQuery.isLoading) {
-    return <div>Data is loading...</div>;
-  }
 
   if (!pieData.length) {
     return <div>No data found...</div>;

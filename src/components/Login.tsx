@@ -1,8 +1,8 @@
 import { ChangeEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { connectFirebase } from '../config/db';
-import { useLoginMutation } from '../hooks/login.hooks';
-import { useMutateRoomAndDisplayName } from '../hooks/rooms.hooks';
+import { connectFirebase } from '@/config/db';
+import { useLoginMutation } from '@/hooks/login.hooks';
+import { useMutateRoomAndDisplayName } from '@/hooks/rooms.hooks';
 
 function Login() {
   const { auth } = connectFirebase();

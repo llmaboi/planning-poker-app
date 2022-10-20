@@ -1,6 +1,7 @@
+import { useUpdateRoom } from '@/hooks/rooms.hooks';
+import { useRoomData } from '@/providers/RoomData.provider';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { useSubscribeRoom, useUpdateRoom } from '../hooks/rooms.hooks';
 import Card from './Card';
 import PieData from './PieData';
 
@@ -26,10 +27,8 @@ function NoRoomOrDisplay() {
 
 function HasRoomAndDisplay({ roomName, displayName }: { roomName: string; displayName: string }) {
   const [selectedNumber, setSelectedNumber] = useState<number>();
-  const roomQuery = useSubscribeRoom({ roomName });
   const roomMutation = useUpdateRoom({ roomName });
-
-  const roomData = roomQuery?.data?.data();
+  const { roomData } = useRoomData();
 
   useEffect(() => {
     if (roomData) {
@@ -38,7 +37,7 @@ function HasRoomAndDisplay({ roomName, displayName }: { roomName: string; displa
         setSelectedNumber(found.cardValue);
       }
     }
-  }, [roomQuery]);
+  }, [roomData, displayName]);
 
   function addCard(number: number) {
     // setSelectedNumber(number);
@@ -71,7 +70,6 @@ function HasRoomAndDisplay({ roomName, displayName }: { roomName: string; displa
           return (
             <Card
               key={number}
-              // buttonDisabled={mutationBatch.isLoading || typeof selectedNumber === 'number'}
               buttonDisabled={typeof selectedNumber === 'number' && selectedNumber > 0}
               number={number}
               onCardClick={addCard}
@@ -83,12 +81,7 @@ function HasRoomAndDisplay({ roomName, displayName }: { roomName: string; displa
 
       {/* TODO: Add users of users voted... */}
 
-      {roomQuery.isLoading ? (
-        //
-        <div>Loading pie data...</div>
-      ) : (
-        <PieData roomName={roomName} />
-      )}
+      <PieData roomData={roomData} />
 
       <div style={{ display: 'flex', justifyContent: 'space-evenly' }}>
         <button onClick={resetSelection}>Reset Selection</button>
