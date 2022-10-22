@@ -1,11 +1,7 @@
+import { connectFirebase } from '@/config/db';
 import { doc, setDoc } from '@firebase/firestore';
-import {
-  useFirestoreDocument,
-  useFirestoreDocumentMutation,
-  UseFirestoreHookOptions,
-} from '@react-query-firebase/firestore';
-import { useMutation } from 'react-query';
-import { connectFirebase } from '../config/db';
+import { collection, DocumentReference, getDoc } from 'firebase/firestore';
+import { useMutation, useQuery } from 'react-query';
 
 /**
  * FB Collection
@@ -36,20 +32,24 @@ interface RoomNameProps {
 /**
  * Get a specific room DocumentReference
  */
-function getRoom({ roomName }: RoomNameProps) {
+function getRoom({ roomName }: RoomNameProps): DocumentReference<DisplayNames> {
   const { firestore } = connectFirebase();
 
   return doc(firestore, 'rooms', roomName);
 }
 
-type GetRoomProps = RoomNameProps & UseFirestoreHookOptions;
+type GetRoomProps = RoomNameProps;
 
 /**
  * Query hook to get a room by name
  */
-function useGetRoom({ roomName, ...props }: GetRoomProps) {
-  return useFirestoreDocument<DisplayNames>(['rooms', roomName], getRoom({ roomName }), {
-    ...props,
+function useGetRoom({ roomName }: GetRoomProps) {
+  return useQuery(['rooms', roomName], async () => {
+    const foundDoc = await getDoc<DisplayNames>(getRoom({ roomName }));
+
+    const myData = foundDoc.data();
+
+    return myData;
   });
 }
 
@@ -58,7 +58,15 @@ type UpdateRoomProps = RoomNameProps;
  * Mutation hook to update a room
  */
 function useUpdateRoom({ roomName }: UpdateRoomProps) {
-  return useFirestoreDocumentMutation<DisplayNames>(getRoom({ roomName }), { merge: true });
+  return useMutation(['room', roomName], (newRoomData: DisplayNames) => {
+    return setDoc<DisplayNames>(
+      getRoom({ roomName }),
+      {
+        ...newRoomData,
+      },
+      { merge: true }
+    );
+  });
 }
 
 type CreateRoomProps = RoomNameProps & { displayName: string; isHost: boolean }; // & DisplayNames;
@@ -77,12 +85,10 @@ type CreateRoomProps = RoomNameProps & { displayName: string; isHost: boolean };
  * returns undefined (no data) // TODO: Figure out how to type this...
  */
 function useMutateRoomAndDisplayName() {
-  const { firestore } = connectFirebase();
-
   // TODO: TS-ify me!
   return useMutation(({ roomName, displayName, isHost }: CreateRoomProps) => {
     return setDoc(
-      doc(firestore, 'rooms', roomName),
+      getRoom({ roomName }),
       {
         [displayName]: {
           cardValue: 0,
@@ -94,25 +100,27 @@ function useMutateRoomAndDisplayName() {
   });
 }
 
-// function useGetDisplayNameByRoom() {
-//   const { firestore } = connectFirebase();
+function useGetDisplayNameByRoom({
+  displayName,
+  roomName,
+}: {
+  displayName: string;
+  roomName: string;
+}) {
+  const { firestore } = connectFirebase();
 
-//   return useQuery(
-//     ['displayName'],
-//     //
-//     ({ queryKey }) => {
-//       const colRef = collection(firestore, 'rooms', roomName);
-//       const ref = doc(
-//         colRef,
-//         'rooms',
-//         displayName
-//         //
-//       );
+  return useQuery(['displayName', displayName], () => {
+    const colRef = collection(firestore, 'rooms');
+    const ref = doc(
+      colRef,
+      roomName
+      // displayName
+      //
+    );
 
-//       return getDoc(ref);
-//     }
-//   );
-// }
+    return getDoc(ref);
+  });
+}
 
-export { useMutateRoomAndDisplayName, useGetRoom, useUpdateRoom };
+export { useGetDisplayNameByRoom, useMutateRoomAndDisplayName, useGetRoom, useUpdateRoom };
 export type { DisplayNames };

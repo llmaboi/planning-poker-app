@@ -1,7 +1,9 @@
+import { useUpdateRoom } from '@/hooks/rooms.hooks';
+import { useRoomData } from '@/providers/RoomData.provider';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { useGetRoom, useUpdateRoom } from '../hooks/rooms.hooks';
 import Card from './Card';
+import NameVoted from './NameVoted';
 import PieData from './PieData';
 
 const cards = [1, 2, 3, 5, 8, 13, 21, 34, 55];
@@ -26,10 +28,8 @@ function NoRoomOrDisplay() {
 
 function HasRoomAndDisplay({ roomName, displayName }: { roomName: string; displayName: string }) {
   const [selectedNumber, setSelectedNumber] = useState<number>();
-  const roomQuery = useGetRoom({ roomName });
   const roomMutation = useUpdateRoom({ roomName });
-
-  const roomData = roomQuery?.data?.data();
+  const { roomData } = useRoomData();
 
   useEffect(() => {
     if (roomData) {
@@ -38,10 +38,9 @@ function HasRoomAndDisplay({ roomName, displayName }: { roomName: string; displa
         setSelectedNumber(found.cardValue);
       }
     }
-  }, [roomQuery]);
+  }, [roomData, displayName]);
 
   function addCard(number: number) {
-    // setSelectedNumber(number);
     roomMutation.mutate({
       [displayName]: {
         cardValue: number,
@@ -71,7 +70,6 @@ function HasRoomAndDisplay({ roomName, displayName }: { roomName: string; displa
           return (
             <Card
               key={number}
-              // buttonDisabled={mutationBatch.isLoading || typeof selectedNumber === 'number'}
               buttonDisabled={typeof selectedNumber === 'number' && selectedNumber > 0}
               number={number}
               onCardClick={addCard}
@@ -81,14 +79,9 @@ function HasRoomAndDisplay({ roomName, displayName }: { roomName: string; displa
         })}
       </div>
 
-      {/* TODO: Add users of users voted... */}
+      {typeof roomData !== 'undefined' && <NameVoted roomData={roomData} />}
 
-      {roomQuery.isLoading ? (
-        //
-        <div>Loading pie data...</div>
-      ) : (
-        <PieData roomName={roomName} />
-      )}
+      {typeof roomData !== 'undefined' && <PieData roomData={roomData} />}
 
       <div style={{ display: 'flex', justifyContent: 'space-evenly' }}>
         <button onClick={resetSelection}>Reset Selection</button>

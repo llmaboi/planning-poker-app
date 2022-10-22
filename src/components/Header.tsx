@@ -1,9 +1,8 @@
-import { writeBatch } from '@firebase/firestore';
-import { useFirestoreWriteBatch } from '@react-query-firebase/firestore';
+import { connectFirebase } from '@/config/db';
+import { DisplayNames, useUpdateRoom } from '@/hooks/rooms.hooks';
+import { useRoomData } from '@/providers/RoomData.provider';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { connectFirebase } from '../config/db';
-import { DisplayNames, useGetRoom, useUpdateRoom } from '../hooks/rooms.hooks';
 
 function HostHeader({
   roomData,
@@ -13,34 +12,31 @@ function HostHeader({
   roomName: string;
 }) {
   const roomMutation = useUpdateRoom({ roomName });
-  const { firestore } = connectFirebase();
   let displayNames: string[] = [];
 
   useEffect(() => {
     if (roomData) {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       displayNames = Array.from(Object.keys(roomData));
     }
   }, [roomData]);
 
-  const batch = writeBatch(firestore);
-  const mutationBatch = useFirestoreWriteBatch(batch);
   function resetCardData() {
-    const promises = displayNames.map((name) => {
-      return roomMutation.mutateAsync({
-        [name]: {
-          cardValue: 0,
-        },
-      });
+    let newData: DisplayNames = {};
+
+    displayNames.forEach((name) => {
+      newData = { ...newData, [name]: { cardValue: 0 } };
     });
 
-    Promise.all(promises)
-      .then(() => mutationBatch.mutateAsync())
-      .catch(console.error);
+    roomMutation.mutate(newData);
   }
 
   return (
     <>
-      <button disabled={mutationBatch.isLoading} onClick={resetCardData}>
+      <button
+        // disabled={mutationBatch.isLoading}
+        onClick={resetCardData}
+      >
         Reset card data
       </button>
     </>
@@ -49,26 +45,10 @@ function HostHeader({
 
 function Header() {
   const navigate = useNavigate();
+  const { roomData } = useRoomData();
   const { roomName } = useParams();
   const { state } = useLocation();
-
-  if (!roomName || !state || (state && !state.displayName)) {
-    navigate('/noAuth');
-    // TODO: Correct this...
-    return <div>Routing to No Auth...</div>;
-  }
-
   const { auth } = connectFirebase();
-  const roomQuery = useGetRoom({ roomName, subscribe: true });
-  const roomData = roomQuery?.data?.data();
-
-  // TODO: Move this to a common header...
-  function signOut() {
-    if (auth.currentUser) {
-      auth.signOut();
-    }
-  }
-
   const [isHost, setIsHost] = useState(false);
 
   useEffect(() => {
@@ -80,7 +60,23 @@ function Header() {
         }
       }
     }
-  }, [roomQuery]);
+  }, [roomData, state.displayName]);
+
+  if (!roomName || !state || (state && !state.displayName)) {
+    navigate('/noAuth');
+    // TODO: Correct this...
+    return <div>Routing to No Auth...</div>;
+  }
+
+  // TODO: Move this to a common header...
+  function signOut() {
+    if (auth.currentUser) {
+      auth.signOut();
+      navigate('/noAuth');
+      // TODO: Correct this...
+      return <div>Routing to No Auth...</div>;
+    }
+  }
 
   return (
     <div
