@@ -15,6 +15,11 @@ function NameVoted({ roomData }: { roomData: DisplayNames }) {
         voted: typeof nameValue?.cardValue === 'number' && nameValue?.cardValue > 0,
       });
     });
+
+    displayNameVoted.sort((a, b) => {
+      return a.name.localeCompare(b.name);
+    });
+
     setDisplayNameAndVoted(displayNameVoted);
   }, [roomData]);
 
