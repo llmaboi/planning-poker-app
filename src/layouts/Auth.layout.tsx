@@ -12,7 +12,7 @@ function AuthLayout() {
           margin: '1rem',
         }}
       >
-        <Header />
+        {/* <Header /> */}
       </div>
       <div>
         <Outlet />

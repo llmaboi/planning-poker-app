@@ -1,126 +1,125 @@
 import { connectFirebase } from '@/config/db';
 import { doc, setDoc } from '@firebase/firestore';
-import { collection, DocumentReference, getDoc } from 'firebase/firestore';
+import { stringLength } from '@firebase/util';
+import {
+  collection,
+  DocumentData,
+  DocumentReference,
+  getDoc,
+  getDocs,
+  QueryDocumentSnapshot,
+  SnapshotOptions,
+} from 'firebase/firestore';
 import { useMutation, useQuery } from 'react-query';
-
 /**
  * FB Collection
+ * The DocumentID is the display name.
  */
-// interface Rooms {
-//   [key: string]: DisplayNames;
-// }
+interface Display {
+  cardValue: number;
+  isHost: boolean;
+}
 
 /**
- * FB Collection
+ * Object I prefer to work with.
  */
-interface DisplayNames {
-  [key: string]: DisplayName;
+interface DisplayWithId extends Display {
+  id: string;
 }
 
 /**
  * FB Document
  */
-interface DisplayName {
-  cardValue: number;
-  isHost?: boolean;
+interface NewRoom {
+  // Collection
+  displays: Display[];
+  // item on room
+  label?: string;
 }
 
-interface RoomNameProps {
-  roomName: string;
+function displayIsDisplay(display: unknown): display is DisplayWithId {
+  if (display && typeof display === 'object') {
+    if (
+      Object.hasOwn(display, 'cardValue') &&
+      Object.hasOwn(display, 'isHost') &&
+      Object.hasOwn(display, 'id')
+    ) {
+      return true;
+    }
+  }
+  return false;
 }
 
-/**
- * Get a specific room DocumentReference
- */
-function getRoom({ roomName }: RoomNameProps): DocumentReference<DisplayNames> {
-  const { firestore } = connectFirebase();
-
-  return doc(firestore, 'rooms', roomName);
+function displayFromFirestore(display: unknown): DisplayWithId | null {
+  if (displayIsDisplay(display)) {
+    return {
+      ...display,
+    };
+  }
+  return null;
 }
 
-type GetRoomProps = RoomNameProps;
+function useGetRoomDisplays({ roomName }: { roomName: string }) {
+  return useQuery(['newRoom', roomName], async () => {
+    const { firestore } = connectFirebase();
+    const baseColRef = collection(firestore, 'rooms');
+    const roomRef = doc(baseColRef, roomName);
 
-/**
- * Query hook to get a room by name
- */
-function useGetRoom({ roomName }: GetRoomProps) {
-  return useQuery(['rooms', roomName], async () => {
-    const foundDoc = await getDoc<DisplayNames>(getRoom({ roomName }));
+    const colRef = collection(roomRef, 'displays');
+    const displaysSnapshot = await getDocs(colRef);
+    const documents: DisplayWithId[] = [];
 
-    const myData = foundDoc.data();
-
-    return myData;
+    displaysSnapshot.forEach((doc) => {
+      const data = doc.data();
+      if (data) {
+        const convertedData = displayFromFirestore({ id: doc.id, ...data });
+        convertedData && documents.push(convertedData);
+      }
+    });
+    return documents;
   });
 }
-
-type UpdateRoomProps = RoomNameProps;
 /**
  * Mutation hook to update a room
  */
-function useUpdateRoom({ roomName }: UpdateRoomProps) {
-  return useMutation(['room', roomName], (newRoomData: DisplayNames) => {
-    return setDoc<DisplayNames>(
-      getRoom({ roomName }),
-      {
-        ...newRoomData,
-      },
-      { merge: true }
-    );
-  });
-}
+function useUpdateDisplay({ roomName }: { roomName: string }) {
+  return useMutation(
+    ['newRoom', roomName],
+    ({ id, cardValue, isHost }: { id: string; cardValue: number; isHost?: boolean }) => {
+      // Set only this doc...
+      const { firestore } = connectFirebase();
+      const baseColRef = collection(firestore, 'rooms');
+      const roomRef = doc(baseColRef, roomName);
+      const colRef = collection(roomRef, 'displays');
+      const displayRef = doc(colRef, id);
 
-type CreateRoomProps = RoomNameProps & { displayName: string; isHost: boolean }; // & DisplayNames;
+      if (typeof isHost === 'boolean') {
+        return setDoc<Display>(
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          displayRef,
+          { isHost, cardValue },
+          { merge: true }
+        );
+      }
 
-/**
- * Get rooms CollectionReference
- */
-// function getRooms({ roomName }: CreateRoomProps) {
-//   const { firestore } = connectFirebase();
-
-//   return collection(firestore, 'rooms', roomName);
-// }
-
-/**
- * Mutation hook to create or update a room
- * returns undefined (no data) // TODO: Figure out how to type this...
- */
-function useMutateRoomAndDisplayName() {
-  // TODO: TS-ify me!
-  return useMutation(({ roomName, displayName, isHost }: CreateRoomProps) => {
-    return setDoc(
-      getRoom({ roomName }),
-      {
-        [displayName]: {
-          cardValue: 0,
-          isHost,
+      return setDoc<Display>(
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        displayRef,
+        {
+          cardValue,
         },
-      },
-      { merge: true }
-    );
-  });
+        { merge: true }
+      );
+    }
+  );
 }
 
-function useGetDisplayNameByRoom({
-  displayName,
-  roomName,
-}: {
-  displayName: string;
-  roomName: string;
-}) {
-  const { firestore } = connectFirebase();
-
-  return useQuery(['displayName', displayName], () => {
-    const colRef = collection(firestore, 'rooms');
-    const ref = doc(
-      colRef,
-      roomName
-      // displayName
-      //
-    );
-
-    return getDoc(ref);
-  });
-}
-
-export { useGetDisplayNameByRoom, useMutateRoomAndDisplayName, useGetRoom, useUpdateRoom };
-export type { DisplayNames };
+export {
+  // TODO: Should not be exported... displayFromFirestore
+  displayFromFirestore,
+  useGetRoomDisplays,
+  useUpdateDisplay,
+};
+export type { DisplayWithId };

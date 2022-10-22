@@ -1,4 +1,4 @@
-import { useUpdateRoom } from '@/hooks/rooms.hooks';
+import { useGetRoomDisplays, useUpdateDisplay } from '@/hooks/rooms.hooks';
 import { useRoomData } from '@/providers/RoomData.provider';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -28,31 +28,32 @@ function NoRoomOrDisplay() {
 
 function HasRoomAndDisplay({ roomName, displayName }: { roomName: string; displayName: string }) {
   const [selectedNumber, setSelectedNumber] = useState<number>();
-  const roomMutation = useUpdateRoom({ roomName });
+  // const { data: roomData } = useGetRoomDisplays({ roomName });
+  const displayMutation = useUpdateDisplay({ roomName });
+
+  // const roomMutation = useUpdateRoom({ roomName });
   const { roomData } = useRoomData();
 
   useEffect(() => {
     if (roomData) {
-      if (Object.keys(roomData).includes(displayName)) {
-        const found = roomData[displayName];
+      const found = roomData.find((display) => display.id === displayName);
+      if (found) {
         setSelectedNumber(found.cardValue);
       }
     }
   }, [roomData, displayName]);
 
   function addCard(number: number) {
-    roomMutation.mutate({
-      [displayName]: {
-        cardValue: number,
-      },
+    displayMutation.mutate({
+      cardValue: number,
+      id: displayName,
     });
   }
 
   function resetSelection() {
-    roomMutation.mutate({
-      [displayName]: {
-        cardValue: 0,
-      },
+    displayMutation.mutate({
+      cardValue: 0,
+      id: displayName,
     });
   }
 
@@ -79,9 +80,9 @@ function HasRoomAndDisplay({ roomName, displayName }: { roomName: string; displa
         })}
       </div>
 
-      {typeof roomData !== 'undefined' && <NameVoted roomData={roomData} />}
+      {typeof roomData !== 'undefined' && <NameVoted />}
 
-      {typeof roomData !== 'undefined' && <PieData roomData={roomData} />}
+      {typeof roomData !== 'undefined' && <PieData />}
 
       <div style={{ display: 'flex', justifyContent: 'space-evenly' }}>
         <button onClick={resetSelection}>Reset Selection</button>

@@ -1,16 +1,26 @@
 import { connectFirebase } from '@/config/db';
-import { DisplayNames } from '@/hooks/rooms.hooks';
-import { doc, DocumentSnapshot, onSnapshot, Unsubscribe } from 'firebase/firestore';
+import { displayFromFirestore, DisplayWithId } from '@/hooks/rooms.hooks';
+import {
+  collection,
+  doc,
+  DocumentSnapshot,
+  onSnapshot,
+  Unsubscribe,
+  getDocs,
+  query,
+  where,
+  QuerySnapshot,
+} from 'firebase/firestore';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
-const RoomDataContext = createContext<{ roomData: DisplayNames | undefined } | undefined>(
+const RoomDataContext = createContext<{ roomData: DisplayWithId[] | undefined } | undefined>(
   undefined
 );
 
 function RoomDataProvider({ children }: { children: ReactNode }) {
   const { roomName } = useParams();
-  const [roomData, setRoomData] = useState<DisplayNames>();
+  const [roomData, setRoomData] = useState<DisplayWithId[]>();
   const { firestore } = connectFirebase();
 
   let unsub: Unsubscribe | undefined;
@@ -22,12 +32,33 @@ function RoomDataProvider({ children }: { children: ReactNode }) {
   }, [unsub]);
 
   useEffect(() => {
+    // TODO: This logic shouldn't live here...
     if (roomName) {
+      const baseColRef = collection(firestore, 'rooms');
+      const roomRef = doc(baseColRef, roomName);
+      const displayRef = collection(roomRef, 'displays');
+      const myQuery = query(displayRef);
+
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      unsub = onSnapshot<DisplayNames>(
-        doc(firestore, 'rooms', roomName),
-        (doc: DocumentSnapshot<DisplayNames>) => {
-          setRoomData(doc.data());
+      unsub = onSnapshot(
+        // TODO: I'm unsure how to solve this error...
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        myQuery,
+        (
+          querySnapshot: QuerySnapshot<{
+            cardValue: number;
+            isHost: boolean;
+          }>
+        ) => {
+          const documents: DisplayWithId[] = [];
+          querySnapshot.forEach((doc) => {
+            const data = displayFromFirestore({ id: doc.id, ...doc.data() });
+            if (data) {
+              documents.push(data);
+            }
+          });
+          setRoomData(documents);
         }
       );
     }

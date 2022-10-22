@@ -1,10 +1,10 @@
+import '@/App.css';
+import Login from '@/components/Login';
+import NoPathFound from '@/components/NoPathFound';
+import NotAuthorized from '@/components/NotAuthorized';
+import Room from '@/components/Room';
+import AuthLayout from '@/layouts/Auth.layout';
 import { Route, Routes } from 'react-router-dom';
-import './App.css';
-import Login from './components/Login';
-import NoPathFound from './components/NoPathFound';
-import NotAuthorized from './components/NotAuthorized';
-import Room from './components/Room';
-import AuthLayout from './layouts/Auth.layout';
 
 function App() {
   return (
