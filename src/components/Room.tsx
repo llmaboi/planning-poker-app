@@ -3,6 +3,7 @@ import { useRoomData } from '@/providers/RoomData.provider';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Card from './Card';
+import NameVoted from './NameVoted';
 import PieData from './PieData';
 
 const cards = [1, 2, 3, 5, 8, 13, 21, 34, 55];
@@ -40,7 +41,6 @@ function HasRoomAndDisplay({ roomName, displayName }: { roomName: string; displa
   }, [roomData, displayName]);
 
   function addCard(number: number) {
-    // setSelectedNumber(number);
     roomMutation.mutate({
       [displayName]: {
         cardValue: number,
@@ -79,9 +79,9 @@ function HasRoomAndDisplay({ roomName, displayName }: { roomName: string; displa
         })}
       </div>
 
-      {/* TODO: Add users of users voted... */}
+      {typeof roomData !== 'undefined' && <NameVoted roomData={roomData} />}
 
-      <PieData roomData={roomData} />
+      {typeof roomData !== 'undefined' && <PieData roomData={roomData} />}
 
       <div style={{ display: 'flex', justifyContent: 'space-evenly' }}>
         <button onClick={resetSelection}>Reset Selection</button>
