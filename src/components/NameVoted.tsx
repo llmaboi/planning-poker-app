@@ -23,10 +23,14 @@ function NameVoted({ roomData }: { roomData: DisplayNames }) {
     setDisplayNameAndVoted(displayNameVoted);
   }, [roomData]);
 
-  //
+  const nameVoted = displayNameAndVoted.filter(({ voted }) => voted);
+
   return (
     <>
       <h3>Display names voted results:</h3>
+      <h5>
+        {nameVoted.length} of {displayNameAndVoted.length} voted
+      </h5>
       <div
         style={{
           display: 'flex',
