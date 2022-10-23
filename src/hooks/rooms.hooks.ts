@@ -128,6 +128,21 @@ function useResetCardValues({ roomName }: { roomName: string }) {
   );
 }
 
-export { displayFromFirestore, useGetRoomDisplays, useResetCardValues, useUpdateDisplay };
-export type { DisplayWithId };
+function useSetRoomLabel({ roomName }: { roomName: string }) {
+  return useMutation(['room', roomName], (label: string) => {
+    const { firestore } = connectFirebase();
+    const baseColRef = collection(firestore, 'rooms');
+    const roomRef = doc(baseColRef, roomName);
 
+    return setDoc(roomRef, { label }, { merge: true });
+  });
+}
+
+export {
+  displayFromFirestore,
+  useGetRoomDisplays,
+  useResetCardValues,
+  useSetRoomLabel,
+  useUpdateDisplay,
+};
+export type { DisplayWithId };

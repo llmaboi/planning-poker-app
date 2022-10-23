@@ -1,25 +1,30 @@
 import { connectFirebase } from '@/config/db';
-import { DisplayWithId, useResetCardValues } from '@/hooks/rooms.hooks';
+import { DisplayWithId, useResetCardValues, useSetRoomLabel } from '@/hooks/rooms.hooks';
 import { useRoomData } from '@/providers/RoomData.provider';
-import { useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 function HostHeader({
-  roomData,
+  displaysData,
   roomName,
+  roomLabel,
 }: {
-  roomData: DisplayWithId[] | undefined;
+  displaysData: DisplayWithId[] | undefined;
   roomName: string;
+  roomLabel: string | undefined;
 }) {
   const resetCardValuesMutation = useResetCardValues({ roomName });
+  const setRoomLabelMutation = useSetRoomLabel({ roomName });
+  const [label, setLabel] = useState(roomLabel || '');
+
   let displayNames: string[] = [];
 
   useEffect(() => {
-    if (roomData) {
+    if (displaysData) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      displayNames = roomData.map((room) => room.id);
+      displayNames = displaysData.map((room) => room.id);
     }
-  }, [roomData]);
+  }, [displaysData]);
 
   function resetCardData() {
     const newData: Pick<DisplayWithId, 'id' | 'cardValue'>[] = [];
@@ -30,12 +35,29 @@ function HostHeader({
     resetCardValuesMutation.mutate({ displayData: newData });
   }
 
-  // TODO: Add option to update room "label"
+  function handleLabelChange(event: ChangeEvent<HTMLInputElement>) {
+    const newLabel = event.target.value;
+    setLabel(newLabel);
+  }
+
+  function updateLabel() {
+    // TODO: Add verification on label...
+    setRoomLabelMutation.mutate(label);
+  }
 
   return (
     <>
       <button disabled={resetCardValuesMutation.isLoading} onClick={resetCardData}>
         Reset card data
+      </button>
+      <input
+        disabled={setRoomLabelMutation.isLoading}
+        type="text"
+        value={label}
+        onChange={handleLabelChange}
+      />
+      <button disabled={setRoomLabelMutation.isLoading} onClick={updateLabel}>
+        Update label
       </button>
     </>
   );
@@ -48,10 +70,11 @@ function Header() {
   const { state } = useLocation();
   const { auth } = connectFirebase();
   const [isHost, setIsHost] = useState(false);
+  const displaysData = roomData.displays;
 
   useEffect(() => {
-    if (roomData) {
-      const found = roomData.find((room) => room.id === state.displayName);
+    if (displaysData) {
+      const found = displaysData.find((room) => room.id === state.displayName);
 
       if (found) {
         if (found.isHost) {
@@ -59,7 +82,7 @@ function Header() {
         }
       }
     }
-  }, [roomData, state.displayName]);
+  }, [displaysData, state.displayName]);
 
   if (!roomName || !state || (state && !state.displayName)) {
     navigate('/noAuth');
@@ -85,8 +108,10 @@ function Header() {
         justifyContent: 'space-evenly',
       }}
     >
-      {isHost && <HostHeader roomName={roomName} roomData={roomData} />}
-      {!isHost && <>ROOM NAME WIP</>}
+      {isHost && (
+        <HostHeader roomName={roomName} displaysData={displaysData} roomLabel={roomData.label} />
+      )}
+      {!isHost && <>Room Label: {roomData.label ? roomData.label : 'NONE'}</>}
       <button onClick={signOut}>Sign Out</button>
     </div>
   );

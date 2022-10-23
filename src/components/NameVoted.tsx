@@ -6,11 +6,12 @@ function NameVoted() {
   const [displayNameAndVoted, setDisplayNameAndVoted] = useState<{ name: string; voted: number }[]>(
     []
   );
+  const displaysData = roomData.displays;
 
   useEffect(() => {
     const displayNameVoted: { name: string; voted: number }[] = [];
     if (roomData) {
-      roomData.forEach(({ id, cardValue }) => {
+      displaysData.forEach(({ id, cardValue }) => {
         displayNameVoted.push({
           name: id,
           voted: cardValue,
@@ -23,7 +24,7 @@ function NameVoted() {
     });
 
     setDisplayNameAndVoted(displayNameVoted);
-  }, [roomData]);
+  }, [displaysData, roomData]);
 
   const nameVoted = displayNameAndVoted.filter(({ voted }) => voted);
 

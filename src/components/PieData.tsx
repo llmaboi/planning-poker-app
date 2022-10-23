@@ -16,13 +16,14 @@ const cardColors = [
 function PieData() {
   const { roomData } = useRoomData();
   const numberMap = new Map<number, number>();
+  const displaysData = roomData.displays;
 
   /**
    * 1. Get all cards to populate pie chard
    *  -- 1. Associate cards with the user && value
    * 2. Get the card for this user (to update the card selection)
    */
-  roomData?.forEach(({ cardValue }) => {
+  displaysData.forEach(({ cardValue }) => {
     if (typeof cardValue === 'number') {
       if (cardValue > 0) {
         const found = numberMap.get(cardValue);

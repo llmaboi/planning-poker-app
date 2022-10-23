@@ -33,15 +33,16 @@ function HasRoomAndDisplay({ roomName, displayName }: { roomName: string; displa
 
   // const roomMutation = useUpdateRoom({ roomName });
   const { roomData } = useRoomData();
+  const displaysData = roomData.displays;
 
   useEffect(() => {
-    if (roomData) {
-      const found = roomData.find((display) => display.id === displayName);
+    if (displaysData) {
+      const found = displaysData.find((display) => display.id === displayName);
       if (found) {
         setSelectedNumber(found.cardValue);
       }
     }
-  }, [roomData, displayName]);
+  }, [displaysData, displayName]);
 
   function addCard(number: number) {
     displayMutation.mutate({
