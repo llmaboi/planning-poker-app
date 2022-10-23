@@ -1,4 +1,4 @@
-import { useGetRoomDisplays, useUpdateDisplay } from '@/hooks/rooms.hooks';
+import { useUpdateDisplay } from '@/hooks/rooms.hooks';
 import { useRoomData } from '@/providers/RoomData.provider';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';

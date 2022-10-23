@@ -1,16 +1,6 @@
 import { connectFirebase } from '@/config/db';
 import { displayFromFirestore, DisplayWithId } from '@/hooks/rooms.hooks';
-import {
-  collection,
-  doc,
-  DocumentSnapshot,
-  onSnapshot,
-  Unsubscribe,
-  getDocs,
-  query,
-  where,
-  QuerySnapshot,
-} from 'firebase/firestore';
+import { collection, doc, onSnapshot, query, QuerySnapshot, Unsubscribe } from 'firebase/firestore';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 

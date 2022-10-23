@@ -1,5 +1,5 @@
 import { connectFirebase } from '@/config/db';
-import { DisplayNames, useUpdateRoom } from '@/hooks/rooms.hooks';
+import { DisplayWithId, useResetCardValues } from '@/hooks/rooms.hooks';
 import { useRoomData } from '@/providers/RoomData.provider';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -8,35 +8,33 @@ function HostHeader({
   roomData,
   roomName,
 }: {
-  roomData: DisplayNames | undefined;
+  roomData: DisplayWithId[] | undefined;
   roomName: string;
 }) {
-  const roomMutation = useUpdateRoom({ roomName });
+  const resetCardValuesMutation = useResetCardValues({ roomName });
   let displayNames: string[] = [];
 
   useEffect(() => {
     if (roomData) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      displayNames = Array.from(Object.keys(roomData));
+      displayNames = roomData.map((room) => room.id);
     }
   }, [roomData]);
 
   function resetCardData() {
-    let newData: DisplayNames = {};
+    const newData: Pick<DisplayWithId, 'id' | 'cardValue'>[] = [];
 
     displayNames.forEach((name) => {
-      newData = { ...newData, [name]: { cardValue: 0 } };
+      newData.push({ id: name, cardValue: 0 });
     });
-
-    roomMutation.mutate(newData);
+    resetCardValuesMutation.mutate({ displayData: newData });
   }
+
+  // TODO: Add option to update room "label"
 
   return (
     <>
-      <button
-        // disabled={mutationBatch.isLoading}
-        onClick={resetCardData}
-      >
+      <button disabled={resetCardValuesMutation.isLoading} onClick={resetCardData}>
         Reset card data
       </button>
     </>
@@ -53,8 +51,9 @@ function Header() {
 
   useEffect(() => {
     if (roomData) {
-      if (Object.keys(roomData).includes(state.displayName)) {
-        const found = roomData[state.displayName];
+      const found = roomData.find((room) => room.id === state.displayName);
+
+      if (found) {
         if (found.isHost) {
           setIsHost(found.isHost);
         }
@@ -87,6 +86,7 @@ function Header() {
       }}
     >
       {isHost && <HostHeader roomName={roomName} roomData={roomData} />}
+      {!isHost && <>ROOM NAME WIP</>}
       <button onClick={signOut}>Sign Out</button>
     </div>
   );

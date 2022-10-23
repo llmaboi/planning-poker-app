@@ -1,15 +1,6 @@
 import { connectFirebase } from '@/config/db';
 import { doc, setDoc } from '@firebase/firestore';
-import { stringLength } from '@firebase/util';
-import {
-  collection,
-  DocumentData,
-  DocumentReference,
-  getDoc,
-  getDocs,
-  QueryDocumentSnapshot,
-  SnapshotOptions,
-} from 'firebase/firestore';
+import { collection, getDocs, writeBatch } from 'firebase/firestore';
 import { useMutation, useQuery } from 'react-query';
 /**
  * FB Collection
@@ -60,7 +51,7 @@ function displayFromFirestore(display: unknown): DisplayWithId | null {
 }
 
 function useGetRoomDisplays({ roomName }: { roomName: string }) {
-  return useQuery(['newRoom', roomName], async () => {
+  return useQuery(['room', roomName], async () => {
     const { firestore } = connectFirebase();
     const baseColRef = collection(firestore, 'rooms');
     const roomRef = doc(baseColRef, roomName);
@@ -84,7 +75,7 @@ function useGetRoomDisplays({ roomName }: { roomName: string }) {
  */
 function useUpdateDisplay({ roomName }: { roomName: string }) {
   return useMutation(
-    ['newRoom', roomName],
+    ['room', roomName],
     ({ id, cardValue, isHost }: { id: string; cardValue: number; isHost?: boolean }) => {
       // Set only this doc...
       const { firestore } = connectFirebase();
@@ -116,10 +107,27 @@ function useUpdateDisplay({ roomName }: { roomName: string }) {
   );
 }
 
-export {
-  // TODO: Should not be exported... displayFromFirestore
-  displayFromFirestore,
-  useGetRoomDisplays,
-  useUpdateDisplay,
-};
+function useResetCardValues({ roomName }: { roomName: string }) {
+  return useMutation(
+    ['room', roomName],
+    ({ displayData }: { displayData: Pick<DisplayWithId, 'id' | 'cardValue'>[] }) => {
+      const { firestore } = connectFirebase();
+      const batch = writeBatch(firestore);
+
+      displayData.forEach((newDisplay) => {
+        const baseColRef = collection(firestore, 'rooms');
+        const roomRef = doc(baseColRef, roomName);
+
+        const colRef = collection(roomRef, 'displays');
+        const displayRef = doc(colRef, newDisplay.id);
+        batch.update(displayRef, { cardValue: newDisplay.cardValue });
+      });
+
+      return batch.commit();
+    }
+  );
+}
+
+export { displayFromFirestore, useGetRoomDisplays, useResetCardValues, useUpdateDisplay };
 export type { DisplayWithId };
+
