@@ -1,27 +1,30 @@
-import { DisplayNames } from '@/hooks/rooms.hooks';
+import { useRoomData } from '@/providers/RoomData.provider';
 import { useEffect, useState } from 'react';
 
-function NameVoted({ roomData }: { roomData: DisplayNames }) {
-  const [displayNameAndVoted, setDisplayNameAndVoted] = useState<
-    { name: string; voted: boolean }[]
-  >([]);
+function NameVoted() {
+  const { roomData } = useRoomData();
+  const [displayNameAndVoted, setDisplayNameAndVoted] = useState<{ name: string; voted: number }[]>(
+    []
+  );
+  const displaysData = roomData.displays;
 
   useEffect(() => {
-    const displayNameVoted: { name: string; voted: boolean }[] = [];
-    const roomDataEntries = Object.entries(roomData);
-    roomDataEntries.forEach(([name, nameValue]) => {
-      displayNameVoted.push({
-        name,
-        voted: typeof nameValue?.cardValue === 'number' && nameValue?.cardValue > 0,
+    const displayNameVoted: { name: string; voted: number }[] = [];
+    if (roomData) {
+      displaysData.forEach(({ id, cardValue }) => {
+        displayNameVoted.push({
+          name: id,
+          voted: cardValue,
+        });
       });
-    });
+    }
 
     displayNameVoted.sort((a, b) => {
       return a.name.localeCompare(b.name);
     });
 
     setDisplayNameAndVoted(displayNameVoted);
-  }, [roomData]);
+  }, [displaysData, roomData]);
 
   const nameVoted = displayNameAndVoted.filter(({ voted }) => voted);
 
@@ -44,7 +47,7 @@ function NameVoted({ roomData }: { roomData: DisplayNames }) {
           displayNameAndVoted.map(({ name, voted }, index) => {
             return (
               <div key={index}>
-                {name}: {voted.toString()}
+                {name}: {voted}
               </div>
             );
           })}

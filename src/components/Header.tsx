@@ -1,43 +1,63 @@
 import { connectFirebase } from '@/config/db';
-import { DisplayNames, useUpdateRoom } from '@/hooks/rooms.hooks';
+import { DisplayWithId, useResetCardValues, useSetRoomLabel } from '@/hooks/rooms.hooks';
 import { useRoomData } from '@/providers/RoomData.provider';
-import { useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 function HostHeader({
-  roomData,
+  displaysData,
   roomName,
+  roomLabel,
 }: {
-  roomData: DisplayNames | undefined;
+  displaysData: DisplayWithId[] | undefined;
   roomName: string;
+  roomLabel: string | undefined;
 }) {
-  const roomMutation = useUpdateRoom({ roomName });
+  const resetCardValuesMutation = useResetCardValues({ roomName });
+  const setRoomLabelMutation = useSetRoomLabel({ roomName });
+  const [label, setLabel] = useState(roomLabel || '');
+
   let displayNames: string[] = [];
 
   useEffect(() => {
-    if (roomData) {
+    if (displaysData) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      displayNames = Array.from(Object.keys(roomData));
+      displayNames = displaysData.map((room) => room.id);
     }
-  }, [roomData]);
+  }, [displaysData]);
 
   function resetCardData() {
-    let newData: DisplayNames = {};
+    const newData: Pick<DisplayWithId, 'id' | 'cardValue'>[] = [];
 
     displayNames.forEach((name) => {
-      newData = { ...newData, [name]: { cardValue: 0 } };
+      newData.push({ id: name, cardValue: 0 });
     });
+    resetCardValuesMutation.mutate({ displayData: newData });
+  }
 
-    roomMutation.mutate(newData);
+  function handleLabelChange(event: ChangeEvent<HTMLInputElement>) {
+    const newLabel = event.target.value;
+    setLabel(newLabel);
+  }
+
+  function updateLabel() {
+    // TODO: Add verification on label...
+    setRoomLabelMutation.mutate(label);
   }
 
   return (
     <>
-      <button
-        // disabled={mutationBatch.isLoading}
-        onClick={resetCardData}
-      >
+      <button disabled={resetCardValuesMutation.isLoading} onClick={resetCardData}>
         Reset card data
+      </button>
+      <input
+        disabled={setRoomLabelMutation.isLoading}
+        type="text"
+        value={label}
+        onChange={handleLabelChange}
+      />
+      <button disabled={setRoomLabelMutation.isLoading} onClick={updateLabel}>
+        Update label
       </button>
     </>
   );
@@ -50,17 +70,19 @@ function Header() {
   const { state } = useLocation();
   const { auth } = connectFirebase();
   const [isHost, setIsHost] = useState(false);
+  const displaysData = roomData.displays;
 
   useEffect(() => {
-    if (roomData) {
-      if (Object.keys(roomData).includes(state.displayName)) {
-        const found = roomData[state.displayName];
+    if (displaysData) {
+      const found = displaysData.find((room) => room.id === state.displayName);
+
+      if (found) {
         if (found.isHost) {
           setIsHost(found.isHost);
         }
       }
     }
-  }, [roomData, state.displayName]);
+  }, [displaysData, state.displayName]);
 
   if (!roomName || !state || (state && !state.displayName)) {
     navigate('/noAuth');
@@ -86,7 +108,10 @@ function Header() {
         justifyContent: 'space-evenly',
       }}
     >
-      {isHost && <HostHeader roomName={roomName} roomData={roomData} />}
+      {isHost && (
+        <HostHeader roomName={roomName} displaysData={displaysData} roomLabel={roomData.label} />
+      )}
+      {!isHost && <>Room Label: {roomData.label ? roomData.label : 'NONE'}</>}
       <button onClick={signOut}>Sign Out</button>
     </div>
   );

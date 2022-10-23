@@ -1,5 +1,5 @@
 import { PieChart } from 'react-minimal-pie-chart';
-import { DisplayNames } from '@/hooks/rooms.hooks';
+import { useRoomData } from '@/providers/RoomData.provider';
 
 const cardColors = [
   '#8D5A97',
@@ -13,24 +13,26 @@ const cardColors = [
   '#BBDFC5',
 ];
 
-function PieData({ roomData }: { roomData: DisplayNames }) {
+function PieData() {
+  const { roomData } = useRoomData();
   const numberMap = new Map<number, number>();
+  const displaysData = roomData.displays;
 
   /**
    * 1. Get all cards to populate pie chard
    *  -- 1. Associate cards with the user && value
    * 2. Get the card for this user (to update the card selection)
    */
-  Array.from(Object.entries(roomData)).forEach(([, displayNameData]) => {
-    if (typeof displayNameData.cardValue === 'number') {
-      if (displayNameData.cardValue > 0) {
-        const found = numberMap.get(displayNameData.cardValue);
+  displaysData.forEach(({ cardValue }) => {
+    if (typeof cardValue === 'number') {
+      if (cardValue > 0) {
+        const found = numberMap.get(cardValue);
 
         if (found) {
           const updatedValue = found + 1;
-          numberMap.set(displayNameData.cardValue, updatedValue);
+          numberMap.set(cardValue, updatedValue);
         } else {
-          numberMap.set(displayNameData.cardValue, 1);
+          numberMap.set(cardValue, 1);
         }
       }
     }

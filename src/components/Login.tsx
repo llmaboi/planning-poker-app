@@ -2,17 +2,17 @@ import { ChangeEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { connectFirebase } from '@/config/db';
 import { useLoginMutation } from '@/hooks/login.hooks';
-import { useMutateRoomAndDisplayName } from '@/hooks/rooms.hooks';
+import { useUpdateDisplay } from '@/hooks/rooms.hooks';
 
 function Login() {
+  const [roomName, setRoomName] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [isHost, setIsHost] = useState(false);
+
   const { auth } = connectFirebase();
-  const createMutation = useMutateRoomAndDisplayName();
+  const createMutation = useUpdateDisplay({ roomName });
   const loginMutation = useLoginMutation();
   const navigate = useNavigate();
-
-  const [displayName, setDisplayName] = useState('');
-  const [roomName, setRoomName] = useState('');
-  const [isHost, setIsHost] = useState(false);
 
   function handleRoomNameChange(event: ChangeEvent<HTMLInputElement> | undefined) {
     if (event && event.target.value) {
@@ -35,8 +35,8 @@ function Login() {
       onSuccess: () => {
         createMutation.mutate(
           {
-            roomName,
-            displayName,
+            cardValue: 0,
+            id: displayName,
             isHost,
           },
           {
