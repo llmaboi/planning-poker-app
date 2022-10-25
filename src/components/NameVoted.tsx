@@ -1,5 +1,6 @@
 import { useRoomData } from '@/providers/RoomData.provider';
 import { useEffect, useState } from 'react';
+import '@/components/NameVoted.css';
 
 function NameVoted() {
   const { roomData } = useRoomData();
@@ -29,30 +30,23 @@ function NameVoted() {
   const nameVoted = displayNameAndVoted.filter(({ voted }) => voted);
 
   return (
-    <>
-      <h3>Display names voted results:</h3>
+    <section className="name-voted-wrapper">
+      <h3>Room voting results:</h3>
       <h5>
         {nameVoted.length} of {displayNameAndVoted.length} voted
       </h5>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'row',
-          flexWrap: 'wrap',
-          justifyContent: 'space-evenly',
-        }}
-      >
+      <div className="voted-wrapper">
         {displayNameAndVoted.length === 0 && <div>No data to display</div>}
         {displayNameAndVoted.length &&
           displayNameAndVoted.map(({ name, voted }, index) => {
             return (
-              <div key={index}>
+              <p key={index}>
                 {name}: {voted}
-              </div>
+              </p>
             );
           })}
       </div>
-    </>
+    </section>
   );
 }
 

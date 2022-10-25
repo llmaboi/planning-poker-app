@@ -1,4 +1,4 @@
-import { CSSProperties } from 'react';
+import '@/components/Card.css';
 
 export default function Card({
   number,
@@ -11,20 +11,14 @@ export default function Card({
   buttonDisabled: boolean;
   onCardClick: (number: number) => void;
 }) {
-  let style: CSSProperties = {
-    border: '1px solid',
-    height: '150px',
-    width: '90px',
-    margin: '5px',
-    alignItems: 'center',
-  };
+  let className = 'card-component';
 
   if (buttonDisabled) {
-    style = { ...style, color: 'red', cursor: 'not-allowed' };
+    className += ' disabled';
   }
 
   if (selectedNumber && selectedNumber === number) {
-    style = { ...style, color: 'green' };
+    className = 'card-component selected';
   }
 
   function handleCardClick() {
@@ -32,7 +26,7 @@ export default function Card({
   }
 
   return (
-    <button style={style} onClick={handleCardClick} disabled={buttonDisabled}>
+    <button className={className} onClick={handleCardClick} disabled={buttonDisabled}>
       {number}
     </button>
   );

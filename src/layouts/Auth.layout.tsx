@@ -1,22 +1,15 @@
 import Header from '@/components/Header';
 import { RoomDataProvider } from '@/providers/RoomData.provider';
 import { Outlet } from 'react-router-dom';
+import '@/layouts/Auth.layout.css';
 
 function AuthLayout() {
   return (
     <RoomDataProvider>
-      <div
-        style={{
-          display: 'block',
-          width: '100vw',
-          margin: '1rem',
-        }}
-      >
-        <Header />
-      </div>
-      <div>
+      <Header />
+      <section className="auth-body">
         <Outlet />
-      </div>
+      </section>
     </RoomDataProvider>
   );
 }

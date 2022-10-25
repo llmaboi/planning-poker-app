@@ -5,6 +5,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Card from './Card';
 import NameVoted from './NameVoted';
 import PieData from './PieData';
+import '@/components/Room.css';
 
 const cards = [1, 2, 3, 5, 8, 13, 21, 34, 55];
 
@@ -28,10 +29,7 @@ function NoRoomOrDisplay() {
 
 function HasRoomAndDisplay({ roomName, displayName }: { roomName: string; displayName: string }) {
   const [selectedNumber, setSelectedNumber] = useState<number>();
-  // const { data: roomData } = useGetRoomDisplays({ roomName });
   const displayMutation = useUpdateDisplay({ roomName });
-
-  // const roomMutation = useUpdateRoom({ roomName });
   const { roomData } = useRoomData();
   const displaysData = roomData.displays;
 
@@ -60,14 +58,7 @@ function HasRoomAndDisplay({ roomName, displayName }: { roomName: string; displa
 
   return (
     <>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'row',
-          flexWrap: 'wrap',
-          justifyContent: 'space-evenly',
-        }}
-      >
+      <div className="cards-wrapper">
         {cards.map((number) => {
           return (
             <Card
@@ -85,7 +76,7 @@ function HasRoomAndDisplay({ roomName, displayName }: { roomName: string; displa
 
       {typeof roomData !== 'undefined' && <PieData />}
 
-      <div style={{ display: 'flex', justifyContent: 'space-evenly' }}>
+      <div className="reset-selection">
         <button onClick={resetSelection}>Reset Selection</button>
       </div>
     </>

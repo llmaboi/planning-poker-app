@@ -1,5 +1,6 @@
 import { PieChart } from 'react-minimal-pie-chart';
 import { useRoomData } from '@/providers/RoomData.provider';
+import '@/components/PieData.css';
 
 const cardColors = [
   '#8D5A97',
@@ -52,36 +53,23 @@ function PieData() {
   }
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'center',
-      }}
-    >
+    <section className="pie-wrapper">
       {pieData.length > 0 && (
-        <div
-          style={{
-            height: '400px',
-            width: '400px',
-          }}
-        >
-          <PieChart
-            data={pieData}
-            label={({ dataEntry }) =>
-              `${dataEntry.title} | ${Math.round(dataEntry.percentage) + '%'}`
-            }
-            labelStyle={(index) => ({
-              fill: cardColors[index],
-              fontSize: '5px',
-              fontFamily: 'sans-serif',
-            })}
-            radius={42}
-            labelPosition={112}
-            style={{ overflow: 'visible' }}
-          />
-        </div>
+        <PieChart
+          data={pieData}
+          label={({ dataEntry }) =>
+            `${dataEntry.title} | ${Math.round(dataEntry.percentage) + '%'}`
+          }
+          labelStyle={(index) => ({
+            fill: cardColors[index],
+            fontSize: '5px',
+            fontFamily: 'sans-serif',
+          })}
+          radius={35}
+          labelPosition={115}
+        />
       )}
-    </div>
+    </section>
   );
 }
 
