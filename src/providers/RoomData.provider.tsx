@@ -1,11 +1,16 @@
-import { connectFirebase } from '@/config/db';
-import { displayFromFirestore, DisplayWithId } from '@/hooks/rooms.hooks';
-import { collection, doc, onSnapshot, query, QuerySnapshot, Unsubscribe } from 'firebase/firestore';
+import {
+  getDisplaysFromQuerySnapshot,
+  getRoomDisplaysSnapshotQuery,
+  getRoomLabel,
+  getRoomSnapshotQuery,
+} from '@/api/firebase';
+import { DisplayWithId } from '@/providers/types';
+import { DocumentSnapshot, onSnapshot, QuerySnapshot, Unsubscribe } from 'firebase/firestore';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 interface RoomData {
-  label?: string;
+  label: string | null;
   displays: DisplayWithId[];
 }
 
@@ -14,8 +19,7 @@ const RoomDataContext = createContext<{ roomData: RoomData } | undefined>(undefi
 function RoomDataProvider({ children }: { children: ReactNode }) {
   const { roomName } = useParams();
   const [roomData, setRoomData] = useState<DisplayWithId[]>([]);
-  const [roomLabel, setRoomLabel] = useState<string | undefined>();
-  const { firestore } = connectFirebase();
+  const [roomLabel, setRoomLabel] = useState<string | null>(null);
 
   let unsubRoom: Unsubscribe | undefined;
   let unsubRoomDisplays: Unsubscribe | undefined;
@@ -28,34 +32,23 @@ function RoomDataProvider({ children }: { children: ReactNode }) {
   }, [unsubRoom, unsubRoomDisplays]);
 
   useEffect(() => {
-    // TODO: This logic shouldn't live here...
     if (roomName) {
-      const baseColRef = collection(firestore, 'rooms');
-      const roomRef = doc(baseColRef, roomName);
-      const displayRef = collection(roomRef, 'displays');
-      const myQuery = query(displayRef);
-
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      unsubRoom = onSnapshot(roomRef, (querySnapshot) => {
-        const roomData = querySnapshot.data();
-        if (roomData && Object.hasOwn(roomData, 'label')) {
-          setRoomLabel(roomData.label);
+      unsubRoom = onSnapshot(
+        getRoomSnapshotQuery(roomName),
+        (documentSnapshot: DocumentSnapshot) => {
+          setRoomLabel(getRoomLabel(documentSnapshot));
         }
-      });
+      );
 
       // eslint-disable-next-line react-hooks/exhaustive-deps
       unsubRoomDisplays = onSnapshot(
         // TODO: I'm not sure how to fix this...
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        myQuery,
-        (querySnapshot: QuerySnapshot<{ cardValue: number; isHost: boolean }>) => {
-          const documents: DisplayWithId[] = [];
-          querySnapshot.forEach((doc) => {
-            const data = displayFromFirestore({ id: doc.id, ...doc.data() });
-            if (data) documents.push(data);
-          });
-          setRoomData(documents);
+        getRoomDisplaysSnapshotQuery(roomName),
+        (querySnap: QuerySnapshot<{ cardValue: number; isHost: boolean }>) => {
+          setRoomData(getDisplaysFromQuerySnapshot(querySnap));
         }
       );
     }
