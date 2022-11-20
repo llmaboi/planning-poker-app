@@ -1,8 +1,8 @@
 import { displayIsDisplay } from '@/api/helpers';
-import { Display } from '@/api/types';
+import { Display_Firebase } from '@/api/types';
 import { connectFirebase } from '@/config/db';
-import { UpdateDisplayProps } from '@/hooks/rooms.hooks';
-import { DisplayWithId } from '@/providers/types';
+import { UpdateDisplayProps } from '@/hooks/roomsFirebase.hooks';
+import { DisplayWithId_Firebase } from '@/providers/types';
 import {
   collection,
   doc,
@@ -17,7 +17,7 @@ import {
 /**
  * Helper Functions
  */
-function displayFromFirestore(display: unknown): DisplayWithId | null {
+function displayFromFirestore(display: unknown): DisplayWithId_Firebase | null {
   if (displayIsDisplay(display)) {
     return {
       ...display,
@@ -36,7 +36,7 @@ async function getRoomDisplays(roomName: string) {
 
   const colRef = collection(roomRef, 'displays');
   const displaysSnapshot = await getDocs(colRef);
-  const documents: DisplayWithId[] = [];
+  const documents: DisplayWithId_Firebase[] = [];
 
   displaysSnapshot.forEach((doc) => {
     const data = doc.data();
@@ -73,8 +73,8 @@ function getRoomDisplaysSnapshotQuery(roomName: string) {
 
 function getDisplaysFromQuerySnapshot(
   querySnapshot: QuerySnapshot<{ cardValue: number; isHost: boolean }>
-): DisplayWithId[] {
-  const documents: DisplayWithId[] = [];
+): DisplayWithId_Firebase[] {
+  const documents: DisplayWithId_Firebase[] = [];
   querySnapshot.forEach((doc) => {
     const data = displayFromFirestore({ id: doc.id, ...doc.data() });
     if (data) documents.push(data);
@@ -96,7 +96,7 @@ async function updateDisplay({
   const displayRef = doc(colRef, id);
 
   if (typeof isHost === 'boolean') {
-    return setDoc<Display>(
+    return setDoc<Display_Firebase>(
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       displayRef,
@@ -105,7 +105,7 @@ async function updateDisplay({
     );
   }
 
-  return setDoc<Display>(
+  return setDoc<Display_Firebase>(
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     displayRef,
@@ -120,7 +120,7 @@ async function resetCardValues({
   displayData,
   roomName,
 }: {
-  displayData: Pick<DisplayWithId, 'id' | 'cardValue'>[];
+  displayData: Pick<DisplayWithId_Firebase, 'id' | 'cardValue'>[];
   roomName: string;
 }) {
   const { firestore } = connectFirebase();

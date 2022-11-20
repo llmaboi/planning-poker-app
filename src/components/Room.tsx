@@ -1,4 +1,4 @@
-import { useUpdateDisplay } from '@/hooks/rooms.hooks';
+import { useUpdateDisplay } from '@/hooks/roomsFastify.hooks';
 import { useRoomData } from '@/providers/RoomData.provider';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -6,6 +6,7 @@ import Card from './Card';
 import NameVoted from './NameVoted';
 import PieData from './PieData';
 import '@/components/Room.css';
+import { Display } from '../../../types';
 
 const cards = [1, 2, 3, 5, 8, 13, 21, 34, 55];
 
@@ -27,34 +28,41 @@ function NoRoomOrDisplay() {
   );
 }
 
-function HasRoomAndDisplay({ roomName, displayName }: { roomName: string; displayName: string }) {
-  const [selectedNumber, setSelectedNumber] = useState<number>();
-  const displayMutation = useUpdateDisplay({ roomName });
+function HasRoomAndDisplay({ roomId, displayName }: { roomId: string; displayName: string }) {
+  const parsedRoomId = parseInt(roomId);
+  const [currentDisplay, setCurrentDisplay] = useState<Display>();
+  const displayMutation = useUpdateDisplay({ roomId: parsedRoomId });
   const { roomData } = useRoomData();
   const displaysData = roomData.displays;
 
   useEffect(() => {
     if (displaysData) {
-      const found = displaysData.find((display) => display.id === displayName);
+      const found = displaysData.find((display) => display.name === displayName);
       if (found) {
-        setSelectedNumber(found.cardValue);
+        setCurrentDisplay(found);
       }
     }
   }, [displaysData, displayName]);
 
   function addCard(number: number) {
-    displayMutation.mutate({
-      cardValue: number,
-      id: displayName,
-    });
+    if (currentDisplay) {
+      displayMutation.mutate({
+        ...currentDisplay,
+        cardValue: number,
+      });
+    }
   }
 
   function resetSelection() {
-    displayMutation.mutate({
-      cardValue: 0,
-      id: displayName,
-    });
+    if (currentDisplay) {
+      displayMutation.mutate({
+        ...currentDisplay,
+        cardValue: 0,
+      });
+    }
   }
+
+  const selectedNumber = currentDisplay?.cardValue;
 
   return (
     <>
@@ -84,12 +92,12 @@ function HasRoomAndDisplay({ roomName, displayName }: { roomName: string; displa
 }
 
 export default function Room() {
-  const { roomName } = useParams();
+  const { roomId } = useParams();
   const { state } = useLocation();
 
-  if (!roomName || !state || (state && !state.displayName)) {
+  if (!roomId || !state || (state && !state.displayName)) {
     return <NoRoomOrDisplay />;
   }
 
-  return <HasRoomAndDisplay roomName={roomName} displayName={state.displayName} />;
+  return <HasRoomAndDisplay roomId={roomId!} displayName={state.displayName} />;
 }

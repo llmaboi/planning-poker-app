@@ -2,7 +2,7 @@ import { ChangeEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { connectFirebase } from '@/config/db';
 import { useLoginMutation } from '@/hooks/login.hooks';
-import { useUpdateDisplay } from '@/hooks/rooms.hooks';
+import { useUpdateDisplay } from '@/hooks/roomsFirebase.hooks';
 
 function Login() {
   const [roomName, setRoomName] = useState('');

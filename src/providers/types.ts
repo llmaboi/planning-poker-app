@@ -1,10 +1,10 @@
-import { Display } from '@/api/types';
+import { Display_Firebase } from '@/api/types';
 
 /**
  * Object I prefer to work with.
  */
-interface DisplayWithId extends Display {
+interface DisplayWithId_Firebase extends Display_Firebase {
   id: string;
 }
 
-export type { DisplayWithId };
+export type { DisplayWithId_Firebase  };

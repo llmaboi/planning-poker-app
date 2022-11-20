@@ -1,3 +1,4 @@
+import axios, { AxiosInstance } from 'axios';
 import { FirebaseApp, initializeApp } from 'firebase/app';
 import { Auth, getAuth } from 'firebase/auth';
 import { Database, getDatabase } from 'firebase/database';
@@ -8,7 +9,7 @@ let database: Database;
 let app: FirebaseApp;
 let firestore: Firestore;
 
-export function connectFirebase() {
+function connectFirebase() {
   if (!app) {
     app = initializeApp(
       {
@@ -37,3 +38,21 @@ export function connectFirebase() {
 
   return { app, auth, database, firestore };
 }
+
+let axiosInstance: AxiosInstance;
+
+const API_BASE = import.meta.env.VITE_API_URL;
+
+function connectAxios() {
+  if (!axiosInstance) {
+    axiosInstance = axios.create({
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  }
+
+  return { axiosInstance };
+}
+
+export { API_BASE, connectAxios, connectFirebase };

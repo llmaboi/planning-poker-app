@@ -2,7 +2,7 @@
  * FireBase Collection
  * The DocumentID is the display name.
  */
-interface Display {
+interface Display_Firebase {
   cardValue: number;
   isHost: boolean;
 }
@@ -10,9 +10,9 @@ interface Display {
 /**
  * FireBase Document
  */
-interface Room {
-  displays: Display[];
+interface Room_Firebase {
+  displays: Display_Firebase[];
   label?: string;
 }
 
-export type { Display, Room };
+export type { Display_Firebase, Room_Firebase };

@@ -14,7 +14,8 @@ function App() {
           <Route element={<Login />} path="" />
         </Route>
         <Route element={<AuthLayout />}>
-          <Route path="/room/:roomName" element={<Room />} />
+          {/* <Route path="/room/:roomName" element={<Room />} /> */}
+          <Route path="/room/:roomId" element={<Room />} />
         </Route>
         <Route path="/noAuth" element={<NotAuthorized />} />
         <Route path="*" element={<NoPathFound />} />

@@ -1,5 +1,5 @@
 import { getRoomDisplays, resetCardValues, setRoomLabel, updateDisplay } from '@/api/firebase';
-import { DisplayWithId } from '@/providers/types';
+import { DisplayWithId_Firebase } from '@/providers/types';
 import { useMutation, useQuery } from 'react-query';
 
 function useGetRoomDisplays({ roomName }: { roomName: string }) {
@@ -24,7 +24,7 @@ function useUpdateDisplay({ roomName }: { roomName: string }) {
 function useResetCardValues({ roomName }: { roomName: string }) {
   return useMutation(
     ['room', roomName],
-    ({ displayData }: { displayData: Pick<DisplayWithId, 'id' | 'cardValue'>[] }) =>
+    ({ displayData }: { displayData: Pick<DisplayWithId_Firebase, 'id' | 'cardValue'>[] }) =>
       resetCardValues({ displayData, roomName })
   );
 }

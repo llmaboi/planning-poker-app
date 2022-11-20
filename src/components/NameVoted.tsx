@@ -12,17 +12,17 @@ function NameVoted() {
   useEffect(() => {
     const displayNameVoted: { name: string; voted: number }[] = [];
     if (roomData) {
-      displaysData.forEach(({ id, cardValue }) => {
+      displaysData.forEach(({ name, cardValue }) => {
         displayNameVoted.push({
-          name: id,
+          name,
           voted: cardValue,
         });
       });
     }
 
-    displayNameVoted.sort((a, b) => {
-      return a.name.localeCompare(b.name);
-    });
+    // displayNameVoted.sort((a, b) => {
+    //   return a.name.localeCompare(b.name);
+    // });
 
     setDisplayNameAndVoted(displayNameVoted);
   }, [displaysData, roomData]);

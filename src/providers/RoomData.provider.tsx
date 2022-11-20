@@ -1,62 +1,41 @@
-import {
-  getDisplaysFromQuerySnapshot,
-  getRoomDisplaysSnapshotQuery,
-  getRoomLabel,
-  getRoomSnapshotQuery,
-} from '@/api/firebase';
-import { DisplayWithId } from '@/providers/types';
-import { DocumentSnapshot, onSnapshot, QuerySnapshot, Unsubscribe } from 'firebase/firestore';
+import { websocketRoomDisplays } from '@/api/mysqlFastify';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { Display } from '../../../types';
 
 interface RoomData {
-  label: string | null;
-  displays: DisplayWithId[];
+  // label: string | null;
+  displays: Display[];
 }
 
 const RoomDataContext = createContext<{ roomData: RoomData } | undefined>(undefined);
 
 function RoomDataProvider({ children }: { children: ReactNode }) {
-  const { roomName } = useParams();
-  const [roomData, setRoomData] = useState<DisplayWithId[]>([]);
-  const [roomLabel, setRoomLabel] = useState<string | null>(null);
+  const { roomId } = useParams();
+  const [displays, setDisplays] = useState<Display[]>([]);
 
-  let unsubRoom: Unsubscribe | undefined;
-  let unsubRoomDisplays: Unsubscribe | undefined;
+  // const [roomLabel, setRoomLabel] = useState<string | null>(null);
+
+  let unSubDisplays: WebSocket | undefined;
 
   useEffect(() => {
     return () => {
-      typeof unsubRoom === 'function' && unsubRoom();
-      typeof unsubRoomDisplays === 'function' && unsubRoomDisplays();
+      unSubDisplays && unSubDisplays.close();
     };
-  }, [unsubRoom, unsubRoomDisplays]);
+  }, [unSubDisplays]);
 
   useEffect(() => {
-    if (roomName) {
+    if (roomId) {
+      const parsedRoomId = parseInt(roomId);
+      const { websocket } = websocketRoomDisplays(parsedRoomId, setDisplays);
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      unsubRoom = onSnapshot(
-        getRoomSnapshotQuery(roomName),
-        (documentSnapshot: DocumentSnapshot) => {
-          setRoomLabel(getRoomLabel(documentSnapshot));
-        }
-      );
-
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      unsubRoomDisplays = onSnapshot(
-        // TODO: I'm not sure how to fix this...
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        getRoomDisplaysSnapshotQuery(roomName),
-        (querySnap: QuerySnapshot<{ cardValue: number; isHost: boolean }>) => {
-          setRoomData(getDisplaysFromQuerySnapshot(querySnap));
-        }
-      );
+      unSubDisplays = websocket;
     }
-  }, []);
+  }, [roomId]);
 
   // NOTE: you *might* need to memoize this value
   // Learn more in http://kcd.im/optimize-context
-  const value: { roomData: RoomData } = { roomData: { label: roomLabel, displays: roomData } };
+  const value: { roomData: RoomData } = { roomData: { displays: displays } };
 
   return <RoomDataContext.Provider value={value}>{children}</RoomDataContext.Provider>;
 }

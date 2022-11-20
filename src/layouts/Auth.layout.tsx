@@ -6,7 +6,7 @@ import '@/layouts/Auth.layout.css';
 function AuthLayout() {
   return (
     <RoomDataProvider>
-      <Header />
+      {/* <Header /> */}
       <section className="auth-body">
         <Outlet />
       </section>

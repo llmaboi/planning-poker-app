@@ -1,6 +1,7 @@
 import { connectFirebase } from '@/config/db';
-import { DisplayWithId, useResetCardValues, useSetRoomLabel } from '@/hooks/rooms.hooks';
+import { useResetCardValues, useSetRoomLabel } from '@/hooks/roomsFirebase.hooks';
 import { useRoomData } from '@/providers/RoomData.provider';
+import { DisplayWithId_Firebase } from '@/providers/types';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
@@ -9,7 +10,7 @@ function HostHeader({
   roomName,
   roomLabel,
 }: {
-  displaysData: DisplayWithId[] | undefined;
+  displaysData: DisplayWithId_Firebase[] | undefined;
   roomName: string;
   roomLabel: string | undefined;
 }) {
@@ -27,7 +28,7 @@ function HostHeader({
   }, [displaysData]);
 
   function resetCardData() {
-    const newData: Pick<DisplayWithId, 'id' | 'cardValue'>[] = [];
+    const newData: Pick<DisplayWithId_Firebase, 'id' | 'cardValue'>[] = [];
 
     displayNames.forEach((name) => {
       newData.push({ id: name, cardValue: 0 });
@@ -109,7 +110,11 @@ function Header() {
       }}
     >
       {isHost && (
-        <HostHeader roomName={roomName} displaysData={displaysData} roomLabel={roomData.label} />
+        <HostHeader
+          roomName={roomName}
+          displaysData={displaysData}
+          roomLabel={roomData.label || undefined}
+        />
       )}
       {!isHost && <>Room Label: {roomData.label ? roomData.label : 'NONE'}</>}
       <button onClick={signOut}>Sign Out</button>
