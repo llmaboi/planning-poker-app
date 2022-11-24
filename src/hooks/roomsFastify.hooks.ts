@@ -1,4 +1,4 @@
-import { getRoomDisplays, updateDisplay } from '@/api/mysqlFastify';
+import { getRoomByName, getRoomDisplays, updateDisplay } from '@/api/mysqlFastify';
 import { useMutation, useQuery } from 'react-query';
 
 function useGetRoomDisplays({ roomId }: { roomId: number }) {
@@ -33,5 +33,9 @@ function useUpdateDisplay({ roomId }: { roomId: number }) {
 //   return useMutation(['room', roomName], (label: string) => setRoomLabel({ label, roomName }));
 // }
 
-export { useGetRoomDisplays, useUpdateDisplay };
+function useGetRoomByName({ roomName }: { roomName: string }) {
+  return useQuery(['room', roomName], () => getRoomByName(roomName));
+}
+
+export { useGetRoomDisplays, useUpdateDisplay, useGetRoomByName };
 export type { UpdateDisplayProps };

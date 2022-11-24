@@ -48,10 +48,21 @@ function websocketRoomDisplays(roomId: number, setDisplays: (data: Display[]) =>
   return { websocket };
 }
 
-async function getRoom(roomId: number) {
+// TODO: implement...
+async function getRoomByName(roomName: string) {
+  const { axiosInstance } = connectAxios();
+  const roomDisplays = await axiosInstance.get<ResponseData<Room>>('/api/rooms/name', {
+    params: { name: roomName },
+  });
+
+  const rawRoom = ZodRoomRaw.parse(roomDisplays.data.data);
+  return rawRoom;
+}
+
+async function getRoomById(roomId: number) {
   const { axiosInstance } = connectAxios();
   // const roomDisplays = await axiosInstance.get<ResponseData<Room>>(`${API_BASE}/rooms/${roomId}`);
-  const roomDisplays = await axiosInstance.get<ResponseData<Room>>(`/rooms/${roomId}`);
+  const roomDisplays = await axiosInstance.get<ResponseData<Room>>(`/api/rooms/id/${roomId}`);
 
   const rawRoom = ZodRoomRaw.parse(roomDisplays.data.data);
   return rawRoom;
@@ -79,7 +90,8 @@ export {
   //   getDisplaysFromQuerySnapshot,
   getRoomDisplays,
   //   getRoomDisplaysSnapshotQuery,
-  getRoom,
+  getRoomById,
+  getRoomByName,
   //   getRoomSnapshotQuery,
   //   resetCardValues,
   //   setRoomLabel,

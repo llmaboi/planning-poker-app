@@ -1,8 +1,9 @@
 import '@/App.css';
-import Login from '@/components/Login';
+import DisplayLogin from '@/components/DisplayLogin';
 import NoPathFound from '@/components/NoPathFound';
 import NotAuthorized from '@/components/NotAuthorized';
 import Room from '@/components/Room';
+import RoomLogin from '@/components/RoomLogin';
 import AuthLayout from '@/layouts/Auth.layout';
 import { Route, Routes } from 'react-router-dom';
 
@@ -11,7 +12,9 @@ function App() {
     <div className="App">
       <Routes>
         <Route path="/">
-          <Route element={<Login />} path="" />
+          {/* TODO: Enhance login experience... */}
+          <Route element={<RoomLogin />} path="" />
+          <Route element={<DisplayLogin />} path=":id" />
         </Route>
         <Route element={<AuthLayout />}>
           {/* <Route path="/room/:roomName" element={<Room />} /> */}
